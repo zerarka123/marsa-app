@@ -1,0 +1,14 @@
+{
+  "appId": "com.marsa.app",
+  "appName": "مرسى",
+  "webDir": "dist",
+  "backgroundColor": "#093753",
+  "server": { "androidScheme": "https" },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "css" }
+  }
+}

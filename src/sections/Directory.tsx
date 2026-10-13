@@ -1,0 +1,207 @@
+import { useMemo, useState } from 'react';
+import { BadgeCheck, Clock, Flag, Hammer, Loader2, MapPin, MessageCircle, Package, Phone, Plus, Search, Settings, Truck } from 'lucide-react';
+import Reveal from '../components/Reveal';
+import { businessKinds, wilayas, type BusinessKind } from '../data';
+import { telHref, waHref } from '../lib/format';
+import { useRemote } from '../lib/remote';
+import { useUi } from '../lib/ui';
+
+const kindIcon: Record<BusinessKind, typeof Hammer> = {
+  'مورّد': Truck,
+  'ورشة بناء سفن': Hammer,
+  'قطع غيار': Settings,
+};
+
+const kindLabel: Record<BusinessKind, string> = {
+  'مورّد': 'الموردون',
+  'ورشة بناء سفن': 'ورشات بناء السفن',
+  'قطع غيار': 'محلات قطع الغيار',
+};
+
+interface Props {
+  query: string;
+  wilaya: string;
+  setWilaya: (w: string) => void;
+}
+
+export default function Directory({ query, wilaya, setWilaya }: Props) {
+  const { businesses, loading, ready } = useRemote();
+  const { openReport } = useUi();
+  const [kind, setKind] = useState<BusinessKind | 'الكل'>('الكل');
+  const [q, setQ] = useState('');
+
+  const list = useMemo(() => {
+    const text = (q || query).trim();
+    return businesses.filter((b) => {
+      if (kind !== 'الكل' && b.kind !== kind) return false;
+      if (wilaya !== 'الكل' && b.wilaya !== wilaya) return false;
+      if (text && !(b.name + b.specialties.join(' ') + b.wilaya + b.kind).includes(text)) return false;
+      return true;
+    });
+  }, [businesses, kind, wilaya, q, query]);
+
+  const field = 'w-full bg-background border border-border rounded-xl px-4 h-12 text-sm outline-none focus:ring-2 focus:ring-primary/30';
+
+  return (
+    <section id="dalil" className="py-16 md:py-24 bg-secondary/60">
+      <div className="max-w-7xl mx-auto px-5 md:px-8">
+        <Reveal>
+          <div className="flex items-baseline gap-4 mb-2">
+            <span className="font-display font-extrabold text-accent text-sm">02</span>
+            <h2 className="font-display font-extrabold text-3xl md:text-5xl">الدليل البحري</h2>
+          </div>
+          <p className="text-muted-foreground max-w-xl leading-relaxed">
+            موردون، ورشات بناء وصيانة السفن، ومحلات قطع الغيار في الولايات الساحلية — اتصل بهم مباشرة.
+          </p>
+        </Reveal>
+
+        <div className="grid grid-cols-3 gap-3 mt-8">
+          {businessKinds.map((k) => {
+            const Icon = kindIcon[k];
+            const active = kind === k;
+            return (
+              <button
+                type="button"
+                key={k}
+                onClick={() => setKind(active ? 'الكل' : k)}
+                className={`flex flex-col items-center gap-2 rounded-2xl border-2 py-4 px-2 min-h-[96px] transition-colors ${
+                  active ? 'bg-primary text-primary-foreground border-primary' : 'bg-card border-border hover:border-primary'
+                }`}
+              >
+                <Icon className="w-7 h-7" strokeWidth={1.8} />
+                <span className="text-sm font-bold text-center leading-tight">{kindLabel[k]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
+          <div className="flex-1 relative">
+            <Search className="w-4 h-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-4" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="ابحث: ياماها، فايبر، سونار…"
+              aria-label="بحث في الدليل"
+              className={`${field} ps-11 bg-card`}
+            />
+          </div>
+          <select
+            aria-label="الولاية"
+            value={wilaya}
+            onChange={(e) => setWilaya(e.target.value)}
+            className="bg-card border border-border rounded-xl px-4 h-12 text-sm font-medium outline-none"
+          >
+            {wilayas.map((w) => (
+              <option key={w} value={w}>{w === 'الكل' ? 'كل الولايات' : w}</option>
+            ))}
+          </select>
+        </div>
+
+        <p className="font-bold text-sm mt-5">{list.length} نتيجة</p>
+
+        {loading ? (
+          <div className="flex flex-col items-center py-14 text-muted-foreground">
+            <Loader2 className="w-8 h-8 animate-spin mb-3" />
+          </div>
+        ) : list.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+            {list.map((b) => {
+              const Icon = kindIcon[b.kind];
+              const tel = telHref(b.phone);
+              const wa = waHref(b.phone);
+              return (
+                <div key={b.id} className="bg-card border border-border rounded-2xl p-5 flex flex-col">
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-display font-bold leading-snug flex items-center gap-1.5">
+                        <span className="break-words">{b.name}</span>
+                        {b.verified && <BadgeCheck className="w-4 h-4 text-primary shrink-0" />}
+                      </h3>
+                      <span className="text-xs text-muted-foreground">{b.kind}</span>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="إبلاغ عن هذا النشاط"
+                      onClick={() => openReport({ type: 'business', id: b.id, label: b.name })}
+                      className="w-11 h-11 -m-2 flex items-center justify-center text-muted-foreground shrink-0"
+                    >
+                      <Flag className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {b.specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {b.specialties.map((s) => (
+                        <span key={s} className="bg-secondary text-xs font-medium px-2.5 py-1 rounded-full">{s}</span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="text-sm text-muted-foreground mt-3 space-y-1">
+                    <p className="flex items-center gap-1.5"><MapPin className="w-4 h-4 shrink-0" /> {b.wilaya}{b.address ? ` — ${b.address}` : ''}</p>
+                    {b.hours && <p className="flex items-center gap-1.5"><Clock className="w-4 h-4 shrink-0" /> {b.hours}</p>}
+                  </div>
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+                    {tel && (
+                      <a href={tel} className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-sm h-11 rounded-full">
+                        <Phone className="w-4 h-4" /> اتصل
+                      </a>
+                    )}
+                    {wa && (
+                      <a
+                        href={wa}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="واتساب"
+                        className="w-11 h-11 flex items-center justify-center border-2 border-primary text-primary rounded-full"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                      </a>
+                    )}
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${b.name} ${b.wilaya}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="الموقع على الخريطة"
+                      className="w-11 h-11 flex items-center justify-center border-2 border-primary text-primary rounded-full"
+                    >
+                      <MapPin className="w-5 h-5" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center py-14 text-center">
+            <Package className="w-10 h-10 text-muted-foreground mb-3" />
+            <p className="font-display font-bold text-lg">
+              {businesses.length === 0 ? 'الدليل فارغ حالياً' : 'لا توجد نتائج مطابقة'}
+            </p>
+            <p className="text-muted-foreground text-sm mt-1">
+              {ready ? 'كن أول من يسجّل نشاطه هنا' : 'الخدمة قيد التفعيل'}
+            </p>
+          </div>
+        )}
+
+        <div className="mt-8 bg-primary text-primary-foreground rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="font-display font-extrabold text-xl">عندك ورشة أو محل أو تورّد معدات بحرية؟</h3>
+            <p className="text-primary-foreground/75 text-sm mt-1">
+              سجّل نشاطك ليظهر في الدليل ويصل إليك الصيادون وأصحاب القوارب.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' })}
+            className="shrink-0 flex items-center gap-2 bg-accent text-accent-foreground font-bold px-6 h-12 rounded-full"
+          >
+            <Plus className="w-5 h-5" /> سجّل نشاطك
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}

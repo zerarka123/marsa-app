@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* مرسى palette — deep teal / warm sand / buoy orange */
+    --background: 48 33% 93%;          /* #F3F1E6 warm sand */
+    --foreground: 168 12% 14%;         /* #1F2926 */
+    --card: 0 0% 100%;
+    --card-foreground: 168 12% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 168 12% 14%;
+    --primary: 203 80% 18%;            /* #093753 deep teal */
+    --primary-foreground: 48 33% 95%;
+    --secondary: 48 24% 88%;
+    --secondary-foreground: 168 12% 14%;
+    --muted: 48 18% 87%;
+    --muted-foreground: 170 6% 38%;
+    --accent: 21 100% 55%;             /* #FF6D1B buoy orange */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 170 8% 80%;
+    --input: 170 8% 80%;
+    --ring: 203 80% 18%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Tajawal', system-ui, sans-serif;
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+
+  body.loaded {
+    opacity: 1;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+  }
+
+  ::selection {
+    background: #093753;
+    color: #F3F1E6;
+  }
+}
+
+/* شريط تمرير بلون العلامة */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #093753;
+  border-radius: 999px;
+}
+
+/* رابط بخط سفلي متحرك */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -0.15em;
+  right: 0;
+  width: 100%;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .link-underline:hover::after {
+    width: 0;
+  }
+}
+
+/* تكبير الصورة عند الظهور / التحويم */
+.img-zoom {
+  overflow: hidden;
+}
+.img-zoom img {
+  transform: scale(1.05);
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.img-zoom:hover img {
+  transform: scale(1);
+}
+
+/* موجات الهيرو */
+@keyframes wave-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.wave-drift {
+  animation: wave-drift 18s linear infinite;
+}
+
+/* مسافة للتمرير نحو الأقسام تحت الهيدر الثابت */
+section[id] {
+  scroll-margin-top: 4rem;
+}
+
+/* الحواف الآمنة (شريط الحالة/التنقل) — مطلوبة لأندرويد 15+ (edge-to-edge) */
+.safe-top {
+  padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+}
+.safe-bottom {
+  padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+}
+
+/* مساحة لشريط التنقل السفلي في الهاتف */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(4.5rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  }
+}
+
+/* احترام إعداد "تقليل الحركة" في النظام */
+@media (prefers-reduced-motion: reduce) {
+  .wave-drift { animation: none; }
+  html { scroll-behavior: auto; }
+  .img-zoom img { transition: none; }
+}

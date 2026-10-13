@@ -1,0 +1,6 @@
+# يُستعمل فقط عند النشر عبر Supabase CLI. (من لوحة الويب: عطّل خيار Verify JWT يدوياً للدالة satim-return)
+[functions.satim-register]
+verify_jwt = true
+
+[functions.satim-return]
+verify_jwt = false
