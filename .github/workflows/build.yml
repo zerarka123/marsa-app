@@ -62,7 +62,16 @@ jobs:
             echo "::warning::لم تُضَف أسرار التوقيع (ANDROID_KEYSTORE_*). تم بناء نسخة التجربة فقط. شغّل workflow «Create upload keystore» ثم أضف الأسرار."
             exit 0
           fi
-          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          if ! printf '%s' "$KEYSTORE_B64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/upload.jks"; then
+            echo "::error::سر ANDROID_KEYSTORE_BASE64 غير صالح: أعد لصق محتوى ملف ANDROID_KEYSTORE_BASE64.txt وحده."
+            exit 1
+          fi
+          echo "تشخيص: طول سر BASE64 = ${#KEYSTORE_B64} حرفاً | حجم الملف بعد فك التشفير = $(stat -c%s "$RUNNER_TEMP/upload.jks") بايت"
+          echo "تشخيص: طول كلمة مرور المخزن = ${#KEYSTORE_PASSWORD} | طول كلمة مرور المفتاح = ${#KEY_PASSWORD} | الاسم المستعار = $KEY_ALIAS"
+          if ! keytool -list -keystore "$RUNNER_TEMP/upload.jks" -storepass:env KEYSTORE_PASSWORD; then
+            echo "::error::تعذّر فتح ملف المفتاح: إما أن سر ANDROID_KEYSTORE_BASE64 ناقص/مقطوع، أو أن ANDROID_KEYSTORE_PASSWORD خاطئ (انظر رسالة keytool أعلاه)."
+            exit 1
+          fi
           AAB=android/app/build/outputs/bundle/release/app-release.aab
           cp "$AAB" out/marsa-release.aab
           jarsigner -keystore "$RUNNER_TEMP/upload.jks" -storepass:env KEYSTORE_PASSWORD -keypass:env KEY_PASSWORD \
