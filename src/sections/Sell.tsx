@@ -216,9 +216,9 @@ export default function Sell() {
               {done ? (
                 <div className="text-center py-8 space-y-3">
                   <CheckCircle2 className="w-14 h-14 text-primary mx-auto" />
-                  <h3 className="font-display font-extrabold text-2xl">تم استلام إعلانك</h3>
+                  <h3 className="font-display font-extrabold text-2xl">تم تم نشر اعلانك </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    سنراجعه وينشر بعد الموافقة (عادةً خلال 24 ساعة). شكراً لثقتك بمرسى.
+                    اعلانك الان ظاهر للجميع . شكراً لثقتك بمرسى.
                   </p>
                   <button type="button" onClick={() => setDone(false)} className="bg-primary text-primary-foreground font-bold px-8 h-11 rounded-full">
                     أضف إعلاناً آخر
