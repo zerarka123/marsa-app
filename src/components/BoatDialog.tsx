@@ -162,6 +162,21 @@ export default function BoatDialog({ boat, onClose }: Props) {
               </div>
             </div>
 
+           {/* أزرار الإجراءات الإضافية (إبلاغ / حذف الإعلان) */}
+            <div className="flex items-center justify-between px-4 py-2 text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("هل أنت متأكد من رغبتك في حذف هذا الإعلان؟")) {
+                    // كود حذف الإعلان
+                  }
+                }}
+                className="text-red-600 hover:text-red-700 flex items-center gap-1 font-bold"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                احذف الإعلان
+              </button>
+            </div>
             {/* شريط اتصال ثابت أسفل النافذة */}
             <div className="border-t border-border bg-card p-3 flex gap-2">
               {tel ? (
