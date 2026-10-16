@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BadgeCheck, Calendar, Check, Flag, Fuel, MessageCircle, Phone, Ruler, Settings2, Share2, Ship, Star } from 'lucide-react';
+import { BadgeCheck, Calendar, Check, Flag, Fuel, MessageCircle, Phone, Ruler, Settings2, Share2, Ship, Star,Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { PLAY_URL } from '../config';
 import { fmtPrice, type Boat } from '../data';
