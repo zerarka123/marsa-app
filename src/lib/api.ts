@@ -314,3 +314,52 @@ export async function fetchBalance(): Promise<number | null> {
   const n = Number(rows[0].balance);
   return Number.isFinite(n) ? n : null;
 }
+
+// ───────── سجل المحفظة (قراءة فقط) ─────────
+export interface WalletTx {
+  id: number;
+  kind: string;
+  amount: number;
+  note: string;
+  createdAt: string;
+}
+
+export interface TopupReq {
+  id: string;
+  method: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
+const toNum = (v: unknown): number => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+/** آخر عمليات الرصيد وآخر طلبات الشحن للمستخدم الحالي (تحميها سياسات RLS في الخادم). */
+export async function fetchWalletActivity(): Promise<{ txs: WalletTx[]; topups: TopupReq[] }> {
+  const user = getCurrentUser();
+  if (!user || !backendReady()) return { txs: [], topups: [] };
+  const uid = encodeURIComponent(user.id);
+  const [t, u] = await Promise.all([
+    fetchRows<Record<string, unknown>>('wallet_transactions', `select=id,kind,amount,note,created_at&user_id=eq.${uid}&order=created_at.desc&limit=10`, true),
+    fetchRows<Record<string, unknown>>('topups', `select=id,method,amount,status,created_at&user_id=eq.${uid}&order=created_at.desc&limit=5`, true),
+  ]);
+  return {
+    txs: t.map((r) => ({
+      id: toNum(r.id),
+      kind: String(r.kind ?? ''),
+      amount: toNum(r.amount),
+      note: String(r.note ?? '').slice(0, 120),
+      createdAt: String(r.created_at ?? ''),
+    })),
+    topups: u.map((r) => ({
+      id: String(r.id ?? ''),
+      method: String(r.method ?? ''),
+      amount: toNum(r.amount),
+      status: String(r.status ?? ''),
+      createdAt: String(r.created_at ?? ''),
+    })),
+  };
+}

@@ -1,4 +1,5 @@
-import { Anchor, Flag } from 'lucide-react';
+import { Flag } from 'lucide-react';
+import Logo from '../components/Logo';
 import { APP } from '../config';
 import { goTo } from '../lib/nav';
 import { useUi } from '../lib/ui';
@@ -21,7 +22,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-10">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Anchor className="w-6 h-6" />
+              <Logo className="w-10 h-10" />
               <span className="font-display font-extrabold text-3xl">مرسى</span>
             </div>
             <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-xs">

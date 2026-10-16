@@ -39,7 +39,7 @@ export const fmtPrice = (n: number) =>
   new Intl.NumberFormat('fr-DZ').format(n).replace(/[\u202f\u00a0]/g, ' ') + ' دج';
 
 // ───────── الدليل البحري ─────────
-export type BusinessKind = 'مورّد' | 'ورشة بناء سفن' | 'قطع غيار';
+export type BusinessKind = 'مورّد' | 'ورشة بناء سفن' | 'قطع غيار' | 'شركة ميكانيك' | 'ورشة ميكانيك';
 
 export interface Business {
   id: number;
@@ -53,4 +53,7 @@ export interface Business {
   verified: boolean;
 }
 
-export const businessKinds: BusinessKind[] = ['مورّد', 'ورشة بناء سفن', 'قطع غيار'];
+export const businessKinds: BusinessKind[] = ['مورّد', 'ورشة بناء سفن', 'قطع غيار', 'شركة ميكانيك', 'ورشة ميكانيك'];
+
+// فرع «ميكانيك السفن» داخل الدليل: شركات الميكانيك + ورشات الميكانيك الخاصة
+export const mechanicKinds: BusinessKind[] = ['شركة ميكانيك', 'ورشة ميكانيك'];

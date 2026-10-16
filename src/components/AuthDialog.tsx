@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { BadgeCheck, Loader2, LogOut, MailCheck, Trash2 } from 'lucide-react';
+import { BadgeCheck, Loader2, LogOut, MailCheck, Trash2, Wallet } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { CONTACT, SHOW_TOPUP_NOTICE } from '../config';
 import { fmtPrice } from '../data';
@@ -17,7 +17,7 @@ const field = 'w-full bg-background text-foreground border border-border rounded
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function AuthDialog({ open, initialMode, onClose }: Props) {
-  const { user } = useAuth();
+  const { user, openWallet } = useAuth();
   const { openLegal } = useUi();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [name, setName] = useState('');
@@ -152,6 +152,16 @@ export default function AuthDialog({ open, initialMode, onClose }: Props) {
                   يمكنك شحن رصيد حسابك عبر موقعنا الإلكتروني.
                 </p>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  window.setTimeout(openWallet, 150);
+                }}
+                className="mt-3 w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold h-11 rounded-xl"
+              >
+                <Wallet className="w-4 h-4" /> محفظتي وشحن الرصيد
+              </button>
             </div>
 
             <button type="button" onClick={logout} className="w-full flex items-center justify-center gap-2 border-2 border-primary text-primary font-bold h-12 rounded-xl">

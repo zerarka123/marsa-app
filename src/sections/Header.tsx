@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Anchor, BadgeCheck, Menu, Star, User, X } from 'lucide-react';
+import { BadgeCheck, Menu, Star, User, Wallet, X } from 'lucide-react';
+import Logo from '../components/Logo';
 import { useAuth } from '../lib/auth';
 import { useFavorites } from '../lib/favorites';
 import { goTo } from '../lib/nav';
@@ -17,7 +18,7 @@ interface HeaderProps {
 
 export default function Header({ onFavorites }: HeaderProps) {
   const fav = useFavorites();
-  const { user, openAuth } = useAuth();
+  const { user, openAuth, openWallet } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -41,7 +42,7 @@ export default function Header({ onFavorites }: HeaderProps) {
           onClick={(e) => { e.preventDefault(); goTo(''); }}
           className={`flex items-center gap-2 ${scrolled || open ? 'text-primary' : 'text-primary-foreground'}`}
         >
-          <Anchor className="w-6 h-6" strokeWidth={2.2} />
+          <Logo className="w-9 h-9" />
           <span className="font-display text-2xl font-extrabold tracking-tight">مرسى</span>
         </a>
 
@@ -72,6 +73,16 @@ export default function Header({ onFavorites }: HeaderProps) {
               </span>
             )}
           </button>
+          {user && (
+            <button
+              type="button"
+              onClick={openWallet}
+              aria-label="المحفظة"
+              className={`w-11 h-11 flex items-center justify-center ${scrolled ? 'text-primary' : 'text-primary-foreground'}`}
+            >
+              <Wallet className="w-5 h-5" />
+            </button>
+          )}
           {user ? (
             <button
               type="button"
@@ -121,6 +132,15 @@ export default function Header({ onFavorites }: HeaderProps) {
               {l.label}
             </a>
           ))}
+          {user && (
+            <button
+              type="button"
+              onClick={() => { setOpen(false); openWallet(); }}
+              className="flex items-center gap-2 w-full text-foreground font-medium py-3 min-h-11"
+            >
+              <Wallet className="w-4 h-4" /> محفظتي
+            </button>
+          )}
           <button
             type="button"
             onClick={() => { setOpen(false); openAuth(user ? undefined : 'signup'); }}

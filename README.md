@@ -20,6 +20,8 @@
 2. Supabase ← **Authentication ← URL Configuration**: ضع في *Site URL* رابط موقعك (الخطوة 3) متبوعاً بـ `/confirmed.html`.
 3. (موصى به) Authentication ← Providers ← Email: اترك **Confirm email** مفعّلاً، وفعّل **CAPTCHA** من Authentication ← Attack Protection.
 
+> **تحديث «ميكانيك السفن»:** إن كانت قاعدتك منشأة سابقاً، شغّل `supabase/update-mechanics.sql` مرة واحدة في SQL Editor (يضيف نوعَي «شركة ميكانيك» و«ورشة ميكانيك» دون المساس بالبيانات). القواعد الجديدة تحصل عليه تلقائياً من `setup.sql`.
+
 ### 2) المفاتيح
 افتح `src/config.ts` وضع:
 - `BACKEND.url` و `BACKEND.anonKey` (من Supabase ← Project Settings ← API — المفتاح **العام** فقط، ممنوع service_role).

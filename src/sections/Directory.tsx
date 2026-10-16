@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { BadgeCheck, Clock, Flag, Hammer, Loader2, MapPin, MessageCircle, Package, Phone, Plus, Search, Settings, Truck } from 'lucide-react';
+import { BadgeCheck, Building2, Clock, Flag, Hammer, HardHat, Loader2, MapPin, MessageCircle, Package, Phone, Plus, Search, Settings, Truck, Wrench } from 'lucide-react';
 import Reveal from '../components/Reveal';
-import { businessKinds, wilayas, type BusinessKind } from '../data';
+import { mechanicKinds, wilayas, type BusinessKind } from '../data';
 import { telHref, waHref } from '../lib/format';
 import { useRemote } from '../lib/remote';
 import { useUi } from '../lib/ui';
@@ -10,13 +10,33 @@ const kindIcon: Record<BusinessKind, typeof Hammer> = {
   'مورّد': Truck,
   'ورشة بناء سفن': Hammer,
   'قطع غيار': Settings,
+  'شركة ميكانيك': Building2,
+  'ورشة ميكانيك': HardHat,
 };
 
-const kindLabel: Record<BusinessKind, string> = {
-  'مورّد': 'الموردون',
-  'ورشة بناء سفن': 'ورشات بناء السفن',
-  'قطع غيار': 'محلات قطع الغيار',
+// النص الظاهر على بطاقة كل نشاط
+const kindText: Record<BusinessKind, string> = {
+  'مورّد': 'مورّد',
+  'ورشة بناء سفن': 'ورشة بناء سفن',
+  'قطع غيار': 'محل قطع غيار',
+  'شركة ميكانيك': 'شركة ميكانيك',
+  'ورشة ميكانيك': 'ورشة ميكانيك خاصة',
 };
+
+type Group = BusinessKind | 'ميكانيك';
+
+// الأقسام الرئيسية في الدليل. «ميكانيك السفن» قسم له فرعان: الشركات والورشات الخاصة.
+const groups: { id: Group; label: string; icon: typeof Hammer }[] = [
+  { id: 'مورّد', label: 'الموردون', icon: Truck },
+  { id: 'ميكانيك', label: 'ميكانيك السفن', icon: Wrench },
+  { id: 'ورشة بناء سفن', label: 'ورشات بناء السفن', icon: Hammer },
+  { id: 'قطع غيار', label: 'محلات قطع الغيار', icon: Settings },
+];
+
+const mechanicTabs: { id: BusinessKind; label: string }[] = [
+  { id: 'شركة ميكانيك', label: 'شركات الميكانيك' },
+  { id: 'ورشة ميكانيك', label: 'ورشات الميكانيك الخاصة' },
+];
 
 interface Props {
   query: string;
@@ -27,18 +47,27 @@ interface Props {
 export default function Directory({ query, wilaya, setWilaya }: Props) {
   const { businesses, loading, ready } = useRemote();
   const { openReport } = useUi();
-  const [kind, setKind] = useState<BusinessKind | 'الكل'>('الكل');
+  const [group, setGroup] = useState<Group | 'الكل'>('الكل');
+  const [mech, setMech] = useState<BusinessKind | 'الكل'>('الكل');
   const [q, setQ] = useState('');
 
   const list = useMemo(() => {
     const text = (q || query).trim();
     return businesses.filter((b) => {
-      if (kind !== 'الكل' && b.kind !== kind) return false;
+      if (group === 'ميكانيك') {
+        if (!mechanicKinds.includes(b.kind)) return false;
+        if (mech !== 'الكل' && b.kind !== mech) return false;
+      } else if (group !== 'الكل' && b.kind !== group) {
+        return false;
+      }
       if (wilaya !== 'الكل' && b.wilaya !== wilaya) return false;
       if (text && !(b.name + b.specialties.join(' ') + b.wilaya + b.kind).includes(text)) return false;
       return true;
     });
-  }, [businesses, kind, wilaya, q, query]);
+  }, [businesses, group, mech, wilaya, q, query]);
+
+  const mechanicsTotal = useMemo(() => businesses.filter((b) => mechanicKinds.includes(b.kind)).length, [businesses]);
+  const countOf = (k: BusinessKind) => businesses.filter((b) => b.kind === k).length;
 
   const field = 'w-full bg-background border border-border rounded-xl px-4 h-12 text-sm outline-none focus:ring-2 focus:ring-primary/30';
 
@@ -51,29 +80,64 @@ export default function Directory({ query, wilaya, setWilaya }: Props) {
             <h2 className="font-display font-extrabold text-3xl md:text-5xl">الدليل البحري</h2>
           </div>
           <p className="text-muted-foreground max-w-xl leading-relaxed">
-            موردون، ورشات بناء وصيانة السفن، ومحلات قطع الغيار في الولايات الساحلية — اتصل بهم مباشرة.
+            موردون، ميكانيك السفن، ورشات بناء وصيانة السفن، ومحلات قطع الغيار في الولايات الساحلية — اتصل بهم مباشرة.
           </p>
         </Reveal>
 
-        <div className="grid grid-cols-3 gap-3 mt-8">
-          {businessKinds.map((k) => {
-            const Icon = kindIcon[k];
-            const active = kind === k;
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
+          {groups.map((g) => {
+            const Icon = g.icon;
+            const active = group === g.id;
             return (
               <button
                 type="button"
-                key={k}
-                onClick={() => setKind(active ? 'الكل' : k)}
+                key={g.id}
+                aria-pressed={active}
+                onClick={() => {
+                  setGroup(active ? 'الكل' : g.id);
+                  setMech('الكل');
+                }}
                 className={`flex flex-col items-center gap-2 rounded-2xl border-2 py-4 px-2 min-h-[96px] transition-colors ${
                   active ? 'bg-primary text-primary-foreground border-primary' : 'bg-card border-border hover:border-primary'
                 }`}
               >
                 <Icon className="w-7 h-7" strokeWidth={1.8} />
-                <span className="text-sm font-bold text-center leading-tight">{kindLabel[k]}</span>
+                <span className="text-sm font-bold text-center leading-tight">{g.label}</span>
               </button>
             );
           })}
         </div>
+
+        {group === 'ميكانيك' && (
+          <div className="mt-3 bg-card border border-border rounded-2xl p-3" role="group" aria-label="فروع ميكانيك السفن">
+            <p className="text-xs text-muted-foreground mb-2">ميكانيك السفن — اختر الفرع:</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                aria-pressed={mech === 'الكل'}
+                onClick={() => setMech('الكل')}
+                className={`h-11 px-4 rounded-full text-sm font-bold border-2 transition-colors ${
+                  mech === 'الكل' ? 'bg-accent text-accent-foreground border-accent' : 'border-border hover:border-primary'
+                }`}
+              >
+                الكل ({mechanicsTotal})
+              </button>
+              {mechanicTabs.map((t) => (
+                <button
+                  type="button"
+                  key={t.id}
+                  aria-pressed={mech === t.id}
+                  onClick={() => setMech(t.id)}
+                  className={`h-11 px-4 rounded-full text-sm font-bold border-2 transition-colors ${
+                    mech === t.id ? 'bg-accent text-accent-foreground border-accent' : 'border-border hover:border-primary'
+                  }`}
+                >
+                  {t.label} ({countOf(t.id)})
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-2 mt-4">
           <div className="flex-1 relative">
@@ -121,7 +185,7 @@ export default function Directory({ query, wilaya, setWilaya }: Props) {
                         <span className="break-words">{b.name}</span>
                         {b.verified && <BadgeCheck className="w-4 h-4 text-primary shrink-0" />}
                       </h3>
-                      <span className="text-xs text-muted-foreground">{b.kind}</span>
+                      <span className="text-xs text-muted-foreground">{kindText[b.kind]}</span>
                     </div>
                     <button
                       type="button"
@@ -161,7 +225,7 @@ export default function Directory({ query, wilaya, setWilaya }: Props) {
                       </a>
                     )}
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${b.name} ${b.wilaya}`)}`}
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([b.name, b.address, b.wilaya, 'الجزائر'].filter(Boolean).join(' '))}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="الموقع على الخريطة"
@@ -188,7 +252,7 @@ export default function Directory({ query, wilaya, setWilaya }: Props) {
 
         <div className="mt-8 bg-primary text-primary-foreground rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            <h3 className="font-display font-extrabold text-xl">عندك ورشة أو محل أو تورّد معدات بحرية؟</h3>
+            <h3 className="font-display font-extrabold text-xl">عندك ورشة أو شركة ميكانيك أو محل أو تورّد معدات بحرية؟</h3>
             <p className="text-primary-foreground/75 text-sm mt-1">
               سجّل نشاطك ليظهر في الدليل ويصل إليك الصيادون وأصحاب القوارب.
             </p>

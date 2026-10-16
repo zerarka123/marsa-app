@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { BadgeCheck, CheckCircle2, Hammer, Loader2, Truck, Wrench } from 'lucide-react';
+import { BadgeCheck, Building2, CheckCircle2, Hammer, HardHat, Loader2, Settings, Truck } from 'lucide-react';
 import Reveal from '../components/Reveal';
 import { wilayas, type BusinessKind } from '../data';
 import { backendReady, errorMessage, insertRow } from '../lib/api';
@@ -10,7 +10,9 @@ import { useUi } from '../lib/ui';
 const kinds: { id: BusinessKind; label: string; text: string; icon: typeof Truck }[] = [
   { id: 'مورّد', label: 'مورّد', text: 'معدات الصيد والبحر', icon: Truck },
   { id: 'ورشة بناء سفن', label: 'ورشة بناء سفن', text: 'بناء وصيانة القوارب', icon: Hammer },
-  { id: 'قطع غيار', label: 'محل قطع غيار', text: 'محركات وقطع ولواحق', icon: Wrench },
+  { id: 'قطع غيار', label: 'محل قطع غيار', text: 'محركات وقطع ولواحق', icon: Settings },
+  { id: 'شركة ميكانيك', label: 'شركة ميكانيك', text: 'صيانة المحركات البحرية', icon: Building2 },
+  { id: 'ورشة ميكانيك', label: 'ورشة ميكانيك خاصة', text: 'ميكانيكي مستقل', icon: HardHat },
 ];
 
 const field = 'w-full bg-background text-foreground border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30';
@@ -84,18 +86,19 @@ export default function Register() {
         <Reveal>
           <h2 className="font-display font-extrabold text-3xl md:text-4xl">سجّل نشاطك</h2>
           <p className="text-muted-foreground mt-2 leading-relaxed">
-            للموردين وورشات بناء السفن ومحلات قطع الغيار: سجّل لتظهر في الدليل البحري ويصلك المشترون مباشرة.
+            للموردين وشركات وورشات ميكانيك السفن وورشات بناء السفن ومحلات قطع الغيار: سجّل لتظهر في الدليل البحري ويصلك المشترون مباشرة.
             تتم مراجعة كل نشاط قبل ظهوره.
           </p>
         </Reveal>
 
-        <div className="grid grid-cols-3 gap-3 mt-8">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-8">
           {kinds.map((k) => (
             <button
               key={k.id}
               type="button"
+              aria-pressed={kind === k.id}
               onClick={() => setKind(k.id)}
-              className={`rounded-2xl border-2 p-3 sm:p-4 text-center transition-colors ${
+              className={`rounded-2xl border-2 p-3 sm:p-4 text-center transition-colors last:col-span-2 sm:last:col-span-1 ${
                 kind === k.id ? 'border-primary bg-card' : 'border-border bg-card/60'
               }`}
             >

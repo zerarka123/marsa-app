@@ -48,7 +48,7 @@ create table if not exists public.businesses (
   id bigint generated always as identity primary key,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   name text not null check (char_length(name) between 2 and 120),
-  kind text not null check (kind in ('مورّد','ورشة بناء سفن','قطع غيار')),
+  kind text not null check (kind in ('مورّد','ورشة بناء سفن','قطع غيار','شركة ميكانيك','ورشة ميكانيك')),
   wilaya text not null check (char_length(wilaya) between 2 and 40),
   address text not null default '' check (char_length(address) <= 200),
   phone text not null check (phone ~ '^[0-9]{8,12}$'),
@@ -369,3 +369,19 @@ create policy "rc_read_own_or_admin" on storage.objects for select to authentica
 drop policy if exists "rc_delete_own" on storage.objects;
 create policy "rc_delete_own" on storage.objects for delete to authenticated
   using (bucket_id = 'receipts' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ───────── تحديث: إضافة فرع «ميكانيك السفن» (شركات + ورشات خاصة) ─────────
+-- للقواعد المنشأة سابقاً: يستبدل قيد الأنواع بقيد جديد يقبل النوعين الجديدين. آمن لإعادة التشغيل.
+do $$
+declare c record;
+begin
+  for c in
+    select conname from pg_constraint
+     where conrelid = 'public.businesses'::regclass and contype = 'c'
+       and pg_get_constraintdef(oid) like '%kind%'
+  loop
+    execute format('alter table public.businesses drop constraint %I', c.conname);
+  end loop;
+  alter table public.businesses add constraint businesses_kind_check
+    check (kind in ('مورّد','ورشة بناء سفن','قطع غيار','شركة ميكانيك','ورشة ميكانيك'));
+end $$;
