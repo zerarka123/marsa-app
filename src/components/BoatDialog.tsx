@@ -3,7 +3,10 @@ import { BadgeCheck, Calendar, Check, Flag, Fuel, MessageCircle, Phone, Ruler, S
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { PLAY_URL } from '../config';
 import { fmtPrice, type Boat } from '../data';
+import { deleteListing, errorMessage } from '../lib/api';
+import { useAuth } from '../lib/auth';
 import { useFavorites } from '../lib/favorites';
+import { useRemote } from '../lib/remote';
 import { telHref, waHref } from '../lib/format';
 import { useUi } from '../lib/ui';
 
@@ -15,6 +18,11 @@ interface Props {
 export default function BoatDialog({ boat, onClose }: Props) {
   const fav = useFavorites();
   const { openReport } = useUi();
+  const { user } = useAuth();
+  const { reload } = useRemote();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const [copied, setCopied] = useState(false);
   const [shot, setShot] = useState<{ id: number | null; index: number }>({ id: null, index: 0 });
 
@@ -47,11 +55,34 @@ export default function BoatDialog({ boat, onClose }: Props) {
       ]
     : [];
 
+  const isOwner = !!boat && !!user && !!boat.userId && boat.userId === user.id;
+
+  const closeDialog = () => {
+    setConfirmDelete(false);
+    setDeleteError('');
+    onClose();
+  };
+
+  const doDelete = async () => {
+    if (!boat || deleting) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await deleteListing(boat.id, boat.images);
+      reload();
+      closeDialog();
+    } catch (e) {
+      setDeleteError(errorMessage(e));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const tel = boat ? telHref(boat.seller.phone) : '';
   const wa = boat ? waHref(boat.seller.phone) : '';
 
   return (
-    <Dialog open={!!boat} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={!!boat} onOpenChange={(v) => !v && closeDialog()}>
       <DialogContent className="sm:max-w-3xl p-0 overflow-hidden gap-0" dir="rtl">
         {boat && (
           <div className="flex flex-col max-h-[90vh]">
@@ -162,21 +193,30 @@ export default function BoatDialog({ boat, onClose }: Props) {
               </div>
             </div>
 
-           {/* أزرار الإجراءات الإضافية (إبلاغ / حذف الإعلان) */}
-            <div className="flex items-center justify-between px-4 py-2 text-xs">
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm("هل أنت متأكد من رغبتك في حذف هذا الإعلان؟")) {
-                    // كود حذف الإعلان
-                  }
-                }}
-                className="text-red-600 hover:text-red-700 flex items-center gap-1 font-bold"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                احذف الإعلان
-              </button>
-            </div>
+            {/* حذف الإعلان (لصاحبه فقط) */}
+            {isOwner && (
+              <div className="px-4 py-2 text-xs border-t border-border">
+                {!confirmDelete ? (
+                  <button type="button" onClick={() => setConfirmDelete(true)} className="text-destructive flex items-center gap-1 font-bold h-10">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    احذف الإعلان
+                  </button>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <p className="font-bold text-sm">هل أنت متأكد من حذف هذا الإعلان؟ لا يمكن التراجع.</p>
+                    {deleteError && <p role="alert" className="text-destructive font-bold">{deleteError}</p>}
+                    <div className="flex gap-2">
+                      <button type="button" disabled={deleting} onClick={doDelete} className="flex-1 h-11 rounded-full bg-destructive text-destructive-foreground font-bold disabled:opacity-60">
+                        {deleting ? 'جارٍ الحذف…' : 'نعم، احذف'}
+                      </button>
+                      <button type="button" disabled={deleting} onClick={() => { setConfirmDelete(false); setDeleteError(''); }} className="flex-1 h-11 rounded-full bg-secondary font-bold">
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {/* شريط اتصال ثابت أسفل النافذة */}
             <div className="border-t border-border bg-card p-3 flex gap-2">
               {tel ? (

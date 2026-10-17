@@ -27,6 +27,7 @@ export interface Boat {
   description: string;
   seller: Seller;
   postedAt: string;
+  userId?: string; // صاحب الإعلان (user_id)
 }
 
 // الولايات الساحلية الـ14 (كلها وجهات سياحية بحرية)

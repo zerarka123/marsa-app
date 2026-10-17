@@ -76,7 +76,6 @@ export default function Directory({ query, wilaya, setWilaya }: Props) {
       <div className="max-w-7xl mx-auto px-5 md:px-8">
         <Reveal>
           <div className="flex items-baseline gap-4 mb-2">
-            <span className="font-display font-extrabold text-accent text-sm">02</span>
             <h2 className="font-display font-extrabold text-3xl md:text-5xl">الدليل البحري</h2>
           </div>
           <p className="text-muted-foreground max-w-xl leading-relaxed">
@@ -259,7 +258,7 @@ export default function Directory({ query, wilaya, setWilaya }: Props) {
           </div>
           <button
             type="button"
-            onClick={() => document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => window.dispatchEvent(new CustomEvent('marsa:go', { detail: 'register' }))}
             className="shrink-0 flex items-center gap-2 bg-accent text-accent-foreground font-bold px-6 h-12 rounded-full"
           >
             <Plus className="w-5 h-5" /> سجّل نشاطك

@@ -180,7 +180,6 @@ export default function Sell() {
           <div>
             <Reveal>
               <div className="flex items-baseline gap-4 mb-2">
-                <span className="font-display font-extrabold text-accent text-sm">03</span>
                 <h2 className="font-display font-extrabold text-3xl md:text-5xl">بِع قاربك</h2>
               </div>
               <p className="text-muted-foreground max-w-md leading-relaxed">

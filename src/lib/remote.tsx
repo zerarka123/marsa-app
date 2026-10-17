@@ -10,11 +10,11 @@ const numOrNull = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-const LISTING_COLS =
-  'id,title,category,wilaya,price,year,length_m,condition,negotiable,engine,fuel,description,seller_name,seller_phone,seller_kind,images,created_at';
+export const LISTING_COLS =
+  'id,user_id,title,category,wilaya,price,year,length_m,condition,negotiable,engine,fuel,description,seller_name,seller_phone,seller_kind,images,created_at';
 const BUSINESS_COLS = 'id,name,kind,wilaya,address,phone,specialties,hours,verified';
 
-function mapBoat(r: Row): Boat | null {
+export function mapBoat(r: Row): Boat | null {
   const id = numOrNull(r.id);
   const price = numOrNull(r.price);
   if (id === null || price === null) return null;
@@ -41,6 +41,7 @@ function mapBoat(r: Row): Boat | null {
       wilaya: str(r.wilaya, 40),
     },
     postedAt: postedLabel(str(r.created_at, 40)),
+    userId: str(r.user_id, 64) || undefined,
   };
 }
 

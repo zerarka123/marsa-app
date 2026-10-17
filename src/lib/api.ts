@@ -290,6 +290,20 @@ export async function deleteImages(urlsOrPaths: string[]): Promise<void> {
   }
 }
 
+/** حذف إعلان يملكه المستخدم الحالي مع صوره. سياسة RLS في الخادم تمنع حذف إعلانات الغير. */
+export async function deleteListing(id: number, images: string[] = []): Promise<void> {
+  const token = await getToken();
+  if (!token) throw new ApiError(MESSAGES.bad_jwt, 'bad_jwt', 401);
+  const rows = await call<unknown>(`/rest/v1/listings?id=eq.${encodeURIComponent(String(id))}`, {
+    method: 'DELETE',
+    token,
+    headers: { Prefer: 'return=representation' },
+  });
+  // عند المنع بسياسة RLS يعيد الخادم نتيجة فارغة بلا خطأ، فنتحقق أن صفاً حُذف فعلاً
+  if (!Array.isArray(rows) || rows.length === 0) throw new ApiError(MESSAGES['42501'], '42501', 403);
+  await deleteImages(images);
+}
+
 /** حذف الحساب وكل البيانات المرتبطة به (الإعلانات والصور) نهائياً. */
 export async function deleteAccount(): Promise<void> {
   const user = getCurrentUser();

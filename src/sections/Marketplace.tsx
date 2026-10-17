@@ -75,7 +75,6 @@ export default function Marketplace({ query, wilaya, setWilaya, category, setCat
       <div className="max-w-7xl mx-auto px-5 md:px-8">
         <Reveal>
           <div className="flex items-baseline gap-4 mb-2">
-            <span className="font-display font-extrabold text-accent text-sm">01</span>
             <h2 className="font-display font-extrabold text-3xl md:text-5xl">قوارب للبيع</h2>
           </div>
           <p className="text-muted-foreground max-w-xl leading-relaxed">
@@ -171,7 +170,7 @@ export default function Marketplace({ query, wilaya, setWilaya, category, setCat
             ) : (
               <button
                 type="button"
-                onClick={() => document.getElementById('vendre')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => window.dispatchEvent(new CustomEvent('marsa:go', { detail: 'sell' }))}
                 className="mt-4 bg-accent text-accent-foreground font-bold px-6 h-11 rounded-full"
               >
                 انشر إعلانك

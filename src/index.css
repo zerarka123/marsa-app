@@ -136,3 +136,35 @@ section[id] {
   html { scroll-behavior: auto; }
   .img-zoom img { transition: none; }
 }
+
+/* شاشة البداية وشاشة الدخول */
+.splash-bg {
+  background:
+    radial-gradient(120% 80% at 80% 0%, rgba(18, 122, 174, 0.9) 0%, rgba(18, 122, 174, 0) 60%),
+    linear-gradient(165deg, #0b4a6f 0%, #093753 55%, #041c2d 100%);
+}
+@keyframes splash-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes splash-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.splash-pop { animation: splash-pop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+.splash-rise { animation: splash-rise 0.7s 0.45s ease both; }
+
+/* أقسام الصفحة الهبوطية القديمة عند عرضها داخل تبويب */
+.embedded section {
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+  background: transparent;
+}
+.embedded section h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-pop, .splash-rise { animation: none; }
+}

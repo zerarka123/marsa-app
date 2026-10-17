@@ -10,6 +10,8 @@ export function setupNative(): void {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }));
       return;
     }
+    // الواجهة تعالج الرجوع بين الشاشات (marsa:back) وتلغي الحدث إن فعلت
+    if (!window.dispatchEvent(new CustomEvent('marsa:back', { cancelable: true }))) return;
     if (window.scrollY > 120) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
